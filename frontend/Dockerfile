@@ -1,4 +1,6 @@
 FROM nginx:alpine
 
+WORKDIR /usr/share/nginx/html
+
+COPY index.html .
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-COPY index.html /usr/share/nginx/html/index.html

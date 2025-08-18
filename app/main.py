@@ -8,7 +8,11 @@ from typing import Optional
 
 import torch
 
-app = FastAPI(title="Multimodal Captioning")
+app = FastAPI()
+
+@app.get("/health")
+async def health():
+    return {"status": "ok"}
 
 # ---- Lazy singletons ----
 _blip_pipeline = None

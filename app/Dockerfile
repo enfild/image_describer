@@ -3,6 +3,7 @@ FROM nvidia/cuda:12.6.0-cudnn-runtime-ubuntu22.04
 RUN apt-get update && apt-get install -y \
     git \
     gcc \
+    curl \
     libgl1 \
     python3 \
     python3-pip \

@@ -53,12 +53,16 @@ docker run -it --rm `
 
 Options:
 
---input path to image inside the container
---model choose vit or blip
+- `--input` path to image or folder inside the container
+- `--model` choose a model or a list of model to compare them
+- `--output` define the out file
 
-results and history are stored in ./results/ on the host
+Also you can tune params for the models in `config.py`: 
+`NUM_CAPTIONS = 3 MAX_TOKENS = 30 TEMPERATURE = 0.9`
 
 ## Web UI (docker-compose)
+
+![Web UI Screenshot](static/image1.png)
 
 Run the full application (FastAPI backend + Nginx frontend + UI):
 ```
