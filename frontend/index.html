@@ -1,0 +1,528 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Multimodal Captioning</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f6f7fb;
+      --card: #ffffff;
+      --muted: #666;
+      --primary: #1f6feb;
+      --border: #e6e8ef;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+      color: #111;
+      min-height: 100vh;
+      display: flex;
+      align-items: start;
+      justify-content: center;
+    }
+
+    .container {
+      width: min(1000px, 96vw);
+      margin: 24px auto 40px;
+    }
+
+    h1 {
+      margin: 0 0 6px 0;
+      font-size: clamp(24px, 3.2vw, 32px);
+    }
+
+    .sub {
+      margin: 0 0 18px 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .upload-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .upload-area {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 2px dashed var(--border);
+      border-radius: 10px;
+      background: var(--card);
+      cursor: pointer;
+      transition: border-color .15s ease, transform .05s ease;
+      font-weight: 600;
+      font-size: 14px;
+      user-select: none;
+    }
+
+    .upload-area:hover {
+      border-color: var(--primary);
+    }
+
+    .upload-area:active {
+      transform: translateY(1px);
+    }
+
+    #fileInput {
+      display: none;
+    }
+
+    .hint {
+      color: var(--muted);
+      font-size: 12px;
+      margin: 6px 0 10px;
+    }
+
+    .preview {
+      display: none;
+      margin: 16px auto;
+      max-width: min(720px, 100%);
+      border-radius: 12px;
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.08);
+      background: #fff;
+    }
+
+    .panel {
+      margin: 14px 0;
+      background: var(--card);
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px 0;
+      font-size: 18px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px 12px;
+      align-items: center;
+    }
+
+    .controls .col-span-3 {
+      grid-column: span 3;
+    }
+
+    .controls .col-span-4 {
+      grid-column: span 4;
+    }
+
+    .controls .col-span-6 {
+      grid-column: span 6;
+    }
+
+    .controls .col-span-12 {
+      grid-column: span 12;
+    }
+
+    select,
+    button,
+    input[type="number"] {
+      padding: 8px 12px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      font-size: 14px;
+      width: 100%;
+    }
+
+    button {
+      border: none;
+      background: var(--primary);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 4px 14px rgba(31, 111, 235, .18);
+      cursor: pointer;
+      transition: transform .05s ease, opacity .15s ease;
+    }
+
+    button:active {
+      transform: translateY(1px);
+    }
+
+    button:disabled {
+      opacity: .6;
+      cursor: not-allowed;
+    }
+
+    .slider {
+      display: grid;
+      grid-template-columns: 120px 1fr 44px;
+      gap: 8px;
+      align-items: center;
+      font-size: 14px;
+    }
+
+    .slider input[type="range"] {
+      width: 100%;
+    }
+
+    .pillbar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pillbar button {
+      background: #eef2ff;
+      color: #1e3a8a;
+      border: 1px solid #dbe3ff;
+      box-shadow: none;
+    }
+
+    .captions {
+      display: grid;
+      gap: 8px;
+    }
+
+    .caption {
+      background: #f0f4ff;
+      border: 1px solid #d9e4ff;
+      color: #102a56;
+      padding: 10px 12px;
+      border-radius: 10px;
+    }
+
+    .history-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .history-item {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      background: #fff;
+    }
+
+    .history-item img {
+      display: block;
+      margin: 8px auto 10px auto;
+      max-width: min(720px, 100%);
+      width: 100%;
+      border-radius: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .model-pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: #eef2ff;
+      color: #1e3a8a;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .3px;
+      margin-right: 8px;
+    }
+
+    .time {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .hr {
+      height: 1px;
+      background: var(--border);
+      margin: 10px 0;
+    }
+
+    @media (max-width: 720px) {
+      .controls {
+        grid-template-columns: repeat(6, 1fr);
+      }
+
+      .controls .col-span-4 {
+        grid-column: span 6;
+      }
+
+      .controls .col-span-3 {
+        grid-column: span 6;
+      }
+
+      .controls .col-span-6 {
+        grid-column: span 6;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>Multimodal Captioning</h1>
+    <p class="sub">Upload an image, choose a model, and generate captions.</p>
+
+    <div class="upload-wrap">
+      <div id="uploadArea" class="upload-area">Choose image / Drop here</div>
+      <input type="file" id="fileInput" accept="image/*" />
+    </div>
+    <div class="hint">Supported: JPG/PNG</div>
+
+    <img id="preview" class="preview" alt="preview" />
+
+    <div class="panel">
+      <h2>Controls</h2>
+      <div class="controls">
+        <div class="col-span-3">
+          <label for="modelSelect" style="font-weight:600; display:block; margin-bottom:6px;">Model</label>
+          <select id="modelSelect">
+            <option value="blip">BLIP</option>
+            <option value="vitgpt2">ViT-GPT2</option>
+            <option value="llava">LLaVA (use it only if that is pre-built)</option>
+          </select>
+        </div>
+
+        <div class="col-span-4">
+          <div class="slider">
+            <label for="temperature">Temperature</label>
+            <input id="temperature" type="range" min="0" max="2" step="0.05" value="0.70" />
+            <span id="tempVal">0.70</span>
+          </div>
+        </div>
+
+        <div class="col-span-4">
+          <div class="slider">
+            <label for="top_p">Top-p</label>
+            <input id="top_p" type="range" min="0.1" max="1.0" step="0.01" value="0.90" />
+            <span id="topPVal">0.90</span>
+          </div>
+        </div>
+
+        <div class="col-span-3">
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Num captions</label>
+          <input id="num_captions" type="number" min="1" max="5" step="1" value="3" />
+        </div>
+
+        <div class="col-span-3">
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Max tokens</label>
+          <input id="max_new_tokens" type="number" min="5" max="128" step="1" value="40" />
+        </div>
+
+        <div class="col-span-6">
+          <label style="font-weight:600; display:block; margin-bottom:6px;">Presets</label>
+          <div class="pillbar">
+            <button type="button" data-preset="precise">Precise</button>
+            <button type="button" data-preset="balanced">Balanced</button>
+            <button type="button" data-preset="creative">Creative</button>
+          </div>
+        </div>
+
+        <div class="col-span-12">
+          <button id="startBtn">Start captioning</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Results</h2>
+      <div id="captions" class="captions"><em>Waiting for an image…</em></div>
+    </div>
+
+    <div class="panel">
+      <h2>History</h2>
+      <div id="historyList" class="history-list">Loading…</div>
+    </div>
+  </div>
+
+  <script>
+    // Elements
+    const uploadArea = document.getElementById("uploadArea");
+    const fileInput = document.getElementById("fileInput");
+    const preview = document.getElementById("preview");
+    const startBtn = document.getElementById("startBtn");
+    const modelSelect = document.getElementById("modelSelect");
+    const captionsEl = document.getElementById("captions");
+    const historyEl = document.getElementById("historyList");
+    const tempEl = document.getElementById("temperature");
+    const topPEl = document.getElementById("top_p");
+    const tempVal = document.getElementById("tempVal");
+    const topPVal = document.getElementById("topPVal");
+    const numEl = document.getElementById("num_captions");
+    const maxTokEl = document.getElementById("max_new_tokens");
+
+    let uploadedFile = null;
+
+    // Upload handling
+    uploadArea.addEventListener("click", () => fileInput.click());
+    uploadArea.addEventListener("dragover", e => { e.preventDefault(); uploadArea.style.borderColor = "#1f6feb"; });
+    uploadArea.addEventListener("dragleave", () => { uploadArea.style.borderColor = "#e6e8ef"; });
+    uploadArea.addEventListener("drop", e => {
+      e.preventDefault();
+      uploadArea.style.borderColor = "#e6e8ef";
+      const file = e.dataTransfer.files?.[0];
+      if (file) handleFile(file);
+    });
+    fileInput.addEventListener("change", e => {
+      const file = e.target.files?.[0];
+      if (file) handleFile(file);
+    });
+
+    function handleFile(file) {
+      uploadedFile = file;
+      const reader = new FileReader();
+      reader.onload = e => {
+        preview.src = e.target.result;
+        preview.style.display = "block";
+      };
+      reader.readAsDataURL(file);
+      captionsEl.innerHTML = "<em>Ready. Click “Start captioning”.</em>";
+      saveSticky();
+    }
+
+    // Sliders
+    function updateLiveValues() {
+      tempVal.textContent = Number(tempEl.value).toFixed(2);
+      topPVal.textContent = Number(topPEl.value).toFixed(2);
+    }
+    tempEl.addEventListener("input", updateLiveValues);
+    topPEl.addEventListener("input", updateLiveValues);
+
+    // Save/load settings
+    function saveSticky() {
+      const payload = {
+        model: modelSelect.value,
+        temperature: tempEl.value,
+        top_p: topPEl.value,
+        num_captions: numEl.value,
+        max_new_tokens: maxTokEl.value,
+      };
+      try { localStorage.setItem("mmc.settings", JSON.stringify(payload)); } catch { }
+    }
+    function loadSticky() {
+      try {
+        const raw = localStorage.getItem("mmc.settings");
+        if (!raw) return;
+        const s = JSON.parse(raw);
+        if (s.model) modelSelect.value = s.model;
+        if (s.temperature) tempEl.value = s.temperature;
+        if (s.top_p) topPEl.value = s.top_p;
+        if (s.num_captions) numEl.value = s.num_captions;
+        if (s.max_new_tokens) maxTokEl.value = s.max_new_tokens;
+      } catch { }
+      updateLiveValues();
+    }
+    [modelSelect, tempEl, topPEl, numEl, maxTokEl].forEach(el => el.addEventListener("change", saveSticky));
+    loadSticky();
+
+    // Presets
+    document.querySelectorAll(".pillbar button").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const p = btn.getAttribute("data-preset");
+        if (p === "precise") { tempEl.value = 0.30; topPEl.value = 0.85; }
+        if (p === "balanced") { tempEl.value = 0.70; topPEl.value = 0.90; }
+        if (p === "creative") { tempEl.value = 1.10; topPEl.value = 0.95; }
+        updateLiveValues();
+        saveSticky();
+      });
+    });
+
+    // Submit
+    startBtn.addEventListener("click", async () => {
+      if (!uploadedFile) { alert("Please choose an image first."); return; }
+
+      const formData = new FormData();
+      formData.append("file", uploadedFile);
+      formData.append("model", modelSelect.value);
+      formData.append("temperature", tempEl.value);
+      formData.append("top_p", topPEl.value);
+      formData.append("num_captions", numEl.value);
+      formData.append("max_new_tokens", maxTokEl.value);
+
+      startBtn.disabled = true;
+      captionsEl.innerHTML = "<em>Processing…</em>";
+
+      try {
+        const res = await fetch("/api/caption", { method: "POST", body: formData });
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        const data = await res.json();
+        renderCaptions(data.captions);
+        await loadHistory();
+      } catch (err) {
+        captionsEl.innerHTML = `<span style="color:#c00">Error: ${String(err)}</span>`;
+      } finally {
+        startBtn.disabled = false;
+      }
+    });
+
+    // Render helpers
+    function renderCaptions(captions) {
+      captionsEl.innerHTML = "";
+      if (!captions || !captions.length) {
+        captionsEl.innerHTML = "<em>No captions produced.</em>";
+        return;
+      }
+      captions.forEach(c => {
+        const div = document.createElement("div");
+        div.className = "caption";
+        div.textContent = c;
+        captionsEl.appendChild(div);
+      });
+    }
+
+    async function loadHistory() {
+      try {
+        const res = await fetch("/api/history");
+        if (!res.ok) throw new Error(`API error ${res.status}`);
+        const data = await res.json();
+        renderHistory(data.entries || []);
+      } catch (err) {
+        historyEl.innerHTML = `<span style="color:#c00">Error: ${String(err)}</span>`;
+      }
+    }
+
+    function renderHistory(entries) {
+      historyEl.innerHTML = "";
+      if (!entries.length) {
+        historyEl.innerHTML = "<em>No history yet.</em>";
+        return;
+      }
+      entries.slice(-10).reverse().forEach(item => {
+        const div = document.createElement("div");
+        div.className = "history-item";
+        const when = new Date(item.timestamp || Date.now()).toLocaleString();
+        const img = item.image_path ? `<img src="/api/image/${item.image_path}" alt="preview"/>` : "";
+        const caps = (item.captions || []).map(c => `<div class="caption">${c}</div>`).join("");
+        div.innerHTML = `
+          <div class="row">
+            <span class="model-pill">${(item.model || "???").toUpperCase()}</span>
+            <span class="time">${when}</span>
+          </div>
+          <div class="hr"></div>
+          ${img}
+          <div class="hr"></div>
+          ${caps}
+        `;
+        historyEl.appendChild(div);
+      });
+    }
+
+    loadHistory();
+  </script>
+</body>
+
+</html>

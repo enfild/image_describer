@@ -1,0 +1,33 @@
+services:
+  app:
+    build:
+      context: ./app
+    volumes:
+      - ./results:/app/results
+    environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health').read()"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+      start_period: 5s
+    restart: always
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    depends_on:
+      app:
+        condition: service_healthy
+    restart: always
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
