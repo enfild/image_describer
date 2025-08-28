@@ -344,170 +344,184 @@
     </div>
 
     <div class="panel">
-      <h2>History</h2>
+      <div class="row">
+        <h2 style="margin:0">History</h2>
+        <button id="clearHistoryBtn" style="padding:6px 12px; font-size:13px;">Clear</button>
+      </div>
       <div id="historyList" class="history-list">Loading…</div>
     </div>
-  </div>
 
-  <script>
-    // Elements
-    const uploadArea = document.getElementById("uploadArea");
-    const fileInput = document.getElementById("fileInput");
-    const preview = document.getElementById("preview");
-    const startBtn = document.getElementById("startBtn");
-    const modelSelect = document.getElementById("modelSelect");
-    const captionsEl = document.getElementById("captions");
-    const historyEl = document.getElementById("historyList");
-    const tempEl = document.getElementById("temperature");
-    const topPEl = document.getElementById("top_p");
-    const tempVal = document.getElementById("tempVal");
-    const topPVal = document.getElementById("topPVal");
-    const numEl = document.getElementById("num_captions");
-    const maxTokEl = document.getElementById("max_new_tokens");
+    <script>
+      // Elements
+      const uploadArea = document.getElementById("uploadArea");
+      const fileInput = document.getElementById("fileInput");
+      const preview = document.getElementById("preview");
+      const startBtn = document.getElementById("startBtn");
+      const modelSelect = document.getElementById("modelSelect");
+      const captionsEl = document.getElementById("captions");
+      const historyEl = document.getElementById("historyList");
+      const tempEl = document.getElementById("temperature");
+      const topPEl = document.getElementById("top_p");
+      const tempVal = document.getElementById("tempVal");
+      const topPVal = document.getElementById("topPVal");
+      const numEl = document.getElementById("num_captions");
+      const maxTokEl = document.getElementById("max_new_tokens");
+      const clearHistoryBtn = document.getElementById("clearHistoryBtn");
 
-    let uploadedFile = null;
+      let uploadedFile = null;
 
-    // Upload handling
-    uploadArea.addEventListener("click", () => fileInput.click());
-    uploadArea.addEventListener("dragover", e => { e.preventDefault(); uploadArea.style.borderColor = "#1f6feb"; });
-    uploadArea.addEventListener("dragleave", () => { uploadArea.style.borderColor = "#e6e8ef"; });
-    uploadArea.addEventListener("drop", e => {
-      e.preventDefault();
-      uploadArea.style.borderColor = "#e6e8ef";
-      const file = e.dataTransfer.files?.[0];
-      if (file) handleFile(file);
-    });
-    fileInput.addEventListener("change", e => {
-      const file = e.target.files?.[0];
-      if (file) handleFile(file);
-    });
+      // Upload handling
+      uploadArea.addEventListener("click", () => fileInput.click());
+      uploadArea.addEventListener("dragover", e => { e.preventDefault(); uploadArea.style.borderColor = "#1f6feb"; });
+      uploadArea.addEventListener("dragleave", () => { uploadArea.style.borderColor = "#e6e8ef"; });
+      uploadArea.addEventListener("drop", e => {
+        e.preventDefault();
+        uploadArea.style.borderColor = "#e6e8ef";
+        const file = e.dataTransfer.files?.[0];
+        if (file) handleFile(file);
+      });
+      fileInput.addEventListener("change", e => {
+        const file = e.target.files?.[0];
+        if (file) handleFile(file);
+      });
 
-    function handleFile(file) {
-      uploadedFile = file;
-      const reader = new FileReader();
-      reader.onload = e => {
-        preview.src = e.target.result;
-        preview.style.display = "block";
-      };
-      reader.readAsDataURL(file);
-      captionsEl.innerHTML = "<em>Ready. Click “Start captioning”.</em>";
-      saveSticky();
-    }
-
-    // Sliders
-    function updateLiveValues() {
-      tempVal.textContent = Number(tempEl.value).toFixed(2);
-      topPVal.textContent = Number(topPEl.value).toFixed(2);
-    }
-    tempEl.addEventListener("input", updateLiveValues);
-    topPEl.addEventListener("input", updateLiveValues);
-
-    // Save/load settings
-    function saveSticky() {
-      const payload = {
-        model: modelSelect.value,
-        temperature: tempEl.value,
-        top_p: topPEl.value,
-        num_captions: numEl.value,
-        max_new_tokens: maxTokEl.value,
-      };
-      try { localStorage.setItem("mmc.settings", JSON.stringify(payload)); } catch { }
-    }
-    function loadSticky() {
-      try {
-        const raw = localStorage.getItem("mmc.settings");
-        if (!raw) return;
-        const s = JSON.parse(raw);
-        if (s.model) modelSelect.value = s.model;
-        if (s.temperature) tempEl.value = s.temperature;
-        if (s.top_p) topPEl.value = s.top_p;
-        if (s.num_captions) numEl.value = s.num_captions;
-        if (s.max_new_tokens) maxTokEl.value = s.max_new_tokens;
-      } catch { }
-      updateLiveValues();
-    }
-    [modelSelect, tempEl, topPEl, numEl, maxTokEl].forEach(el => el.addEventListener("change", saveSticky));
-    loadSticky();
-
-    // Presets
-    document.querySelectorAll(".pillbar button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const p = btn.getAttribute("data-preset");
-        if (p === "precise") { tempEl.value = 0.30; topPEl.value = 0.85; }
-        if (p === "balanced") { tempEl.value = 0.70; topPEl.value = 0.90; }
-        if (p === "creative") { tempEl.value = 1.10; topPEl.value = 0.95; }
-        updateLiveValues();
+      function handleFile(file) {
+        uploadedFile = file;
+        const reader = new FileReader();
+        reader.onload = e => {
+          preview.src = e.target.result;
+          preview.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+        captionsEl.innerHTML = "<em>Ready. Click “Start captioning”.</em>";
         saveSticky();
+      }
+
+      // Sliders
+      function updateLiveValues() {
+        tempVal.textContent = Number(tempEl.value).toFixed(2);
+        topPVal.textContent = Number(topPEl.value).toFixed(2);
+      }
+      tempEl.addEventListener("input", updateLiveValues);
+      topPEl.addEventListener("input", updateLiveValues);
+
+      // Save/load settings
+      function saveSticky() {
+        const payload = {
+          model: modelSelect.value,
+          temperature: tempEl.value,
+          top_p: topPEl.value,
+          num_captions: numEl.value,
+          max_new_tokens: maxTokEl.value,
+        };
+        try { localStorage.setItem("mmc.settings", JSON.stringify(payload)); } catch { }
+      }
+      function loadSticky() {
+        try {
+          const raw = localStorage.getItem("mmc.settings");
+          if (!raw) return;
+          const s = JSON.parse(raw);
+          if (s.model) modelSelect.value = s.model;
+          if (s.temperature) tempEl.value = s.temperature;
+          if (s.top_p) topPEl.value = s.top_p;
+          if (s.num_captions) numEl.value = s.num_captions;
+          if (s.max_new_tokens) maxTokEl.value = s.max_new_tokens;
+        } catch { }
+        updateLiveValues();
+      }
+      [modelSelect, tempEl, topPEl, numEl, maxTokEl].forEach(el => el.addEventListener("change", saveSticky));
+      loadSticky();
+
+      // Presets
+      document.querySelectorAll(".pillbar button").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const p = btn.getAttribute("data-preset");
+          if (p === "precise") { tempEl.value = 0.30; topPEl.value = 0.85; }
+          if (p === "balanced") { tempEl.value = 0.70; topPEl.value = 0.90; }
+          if (p === "creative") { tempEl.value = 1.10; topPEl.value = 0.95; }
+          updateLiveValues();
+          saveSticky();
+        });
       });
-    });
 
-    // Submit
-    startBtn.addEventListener("click", async () => {
-      if (!uploadedFile) { alert("Please choose an image first."); return; }
+      // Submit
+      startBtn.addEventListener("click", async () => {
+        if (!uploadedFile) { alert("Please choose an image first."); return; }
 
-      const formData = new FormData();
-      formData.append("file", uploadedFile);
-      formData.append("model", modelSelect.value);
-      formData.append("temperature", tempEl.value);
-      formData.append("top_p", topPEl.value);
-      formData.append("num_captions", numEl.value);
-      formData.append("max_new_tokens", maxTokEl.value);
+        const formData = new FormData();
+        formData.append("file", uploadedFile);
+        formData.append("model", modelSelect.value);
+        formData.append("temperature", tempEl.value);
+        formData.append("top_p", topPEl.value);
+        formData.append("num_captions", numEl.value);
+        formData.append("max_new_tokens", maxTokEl.value);
 
-      startBtn.disabled = true;
-      captionsEl.innerHTML = "<em>Processing…</em>";
+        startBtn.disabled = true;
+        captionsEl.innerHTML = "<em>Processing…</em>";
 
-      try {
-        const res = await fetch("/api/caption", { method: "POST", body: formData });
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        const data = await res.json();
-        renderCaptions(data.captions);
-        await loadHistory();
-      } catch (err) {
-        captionsEl.innerHTML = `<span style="color:#c00">Error: ${String(err)}</span>`;
-      } finally {
-        startBtn.disabled = false;
-      }
-    });
-
-    // Render helpers
-    function renderCaptions(captions) {
-      captionsEl.innerHTML = "";
-      if (!captions || !captions.length) {
-        captionsEl.innerHTML = "<em>No captions produced.</em>";
-        return;
-      }
-      captions.forEach(c => {
-        const div = document.createElement("div");
-        div.className = "caption";
-        div.textContent = c;
-        captionsEl.appendChild(div);
+        try {
+          const res = await fetch("/api/caption", { method: "POST", body: formData });
+          if (!res.ok) throw new Error(`API error ${res.status}`);
+          const data = await res.json();
+          renderCaptions(data.captions);
+          await loadHistory();
+        } catch (err) {
+          captionsEl.innerHTML = `<span style="color:#c00">Error: ${String(err)}</span>`;
+        } finally {
+          startBtn.disabled = false;
+        }
       });
-    }
 
-    async function loadHistory() {
-      try {
-        const res = await fetch("/api/history");
-        if (!res.ok) throw new Error(`API error ${res.status}`);
-        const data = await res.json();
-        renderHistory(data.entries || []);
-      } catch (err) {
-        historyEl.innerHTML = `<span style="color:#c00">Error: ${String(err)}</span>`;
+      // Render helpers
+      function renderCaptions(captions) {
+        captionsEl.innerHTML = "";
+        if (!captions || !captions.length) {
+          captionsEl.innerHTML = "<em>No captions produced.</em>";
+          return;
+        }
+        captions.forEach(c => {
+          const div = document.createElement("div");
+          div.className = "caption";
+          div.textContent = c;
+          captionsEl.appendChild(div);
+        });
       }
-    }
 
-    function renderHistory(entries) {
-      historyEl.innerHTML = "";
-      if (!entries.length) {
-        historyEl.innerHTML = "<em>No history yet.</em>";
-        return;
+      async function loadHistory() {
+        try {
+          const res = await fetch("/api/history");
+          if (!res.ok) throw new Error(`API error ${res.status}`);
+          const data = await res.json();
+          renderHistory(data.entries || []);
+        } catch (err) {
+          historyEl.innerHTML = `<span style="color:#c00">Error: ${String(err)}</span>`;
+        }
       }
-      entries.slice(-10).reverse().forEach(item => {
-        const div = document.createElement("div");
-        div.className = "history-item";
-        const when = new Date(item.timestamp || Date.now()).toLocaleString();
-        const img = item.image_path ? `<img src="/api/image/${item.image_path}" alt="preview"/>` : "";
-        const caps = (item.captions || []).map(c => `<div class="caption">${c}</div>`).join("");
-        div.innerHTML = `
+
+      clearHistoryBtn.addEventListener("click", async () => {
+        if (!confirm("Clear all history?")) return;
+        try {
+          const res = await fetch("/api/history", { method: "DELETE" });
+          if (!res.ok) throw new Error(`API error ${res.status}`);
+          await loadHistory();
+        } catch (err) {
+          alert("Failed to clear history: " + err);
+        }
+      });
+
+      function renderHistory(entries) {
+        historyEl.innerHTML = "";
+        if (!entries.length) {
+          historyEl.innerHTML = "<em>No history yet.</em>";
+          return;
+        }
+        entries.slice(-10).reverse().forEach(item => {
+          const div = document.createElement("div");
+          div.className = "history-item";
+          const when = new Date(item.timestamp || Date.now()).toLocaleString();
+          const img = item.image_path ? `<img src="/api/image/${item.image_path}" alt="preview"/>` : "";
+          const caps = (item.captions || []).map(c => `<div class="caption">${c}</div>`).join("");
+          div.innerHTML = `
           <div class="row">
             <span class="model-pill">${(item.model || "???").toUpperCase()}</span>
             <span class="time">${when}</span>
@@ -517,12 +531,12 @@
           <div class="hr"></div>
           ${caps}
         `;
-        historyEl.appendChild(div);
-      });
-    }
+          historyEl.appendChild(div);
+        });
+      }
 
-    loadHistory();
-  </script>
+      loadHistory();
+    </script>
 </body>
 
 </html>

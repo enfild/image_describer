@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timezone
 from pathlib import Path
+import shutil
 from config import Config
 
 def save_upload(file_bytes: bytes, suffix: str = ".jpg") -> str:
@@ -36,3 +37,16 @@ def load_history():
         with open(file, "r", encoding="utf-8") as f:
             all_entries.extend(json.load(f))
     return all_entries
+
+def clear_history():
+    for file in Config.RESULTS_DIR.glob("*.json"):
+        try:
+            file.unlink()
+        except Exception as e:
+            print(f"The file wasn't removed {file}: {e}")
+    uploads_dir = Config.RESULTS_DIR / "uploads"
+    if uploads_dir.exists() and uploads_dir.is_dir():
+        try:
+            shutil.rmtree(uploads_dir)
+        except Exception as e:
+            print(f"The uploads folder wasn't removed: {e}") 

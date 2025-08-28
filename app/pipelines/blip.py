@@ -5,7 +5,8 @@ from transformers import BlipProcessor, BlipForConditionalGeneration
 
 class BLIPPipeline:
 
-    def __init__(self, model_name: str = "Salesforce/blip-image-captioning-base"):
+    # blip-image-captioning-large
+    def __init__(self, model_name: str = "Salesforce/blip-image-captioning-large"):
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.dtype = torch.float16 if self.device == "cuda" else torch.float32
 
@@ -25,7 +26,7 @@ class BLIPPipeline:
         top_p: float = 0.9,
     ) -> List[str]:
         image = Image.open(image_path).convert("RGB")
-    
+        # text = "a photography of"
         inputs = self.processor(images=image, return_tensors="pt").to(self.device)
         pixel_values = inputs.pixel_values
     

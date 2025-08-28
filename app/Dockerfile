@@ -44,8 +44,8 @@ from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoToken
 from transformers import AutoProcessor, AutoModel
 
 # BLIP
-BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-base")
-BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-base")
+BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large")
+BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large")
 
 # ViT-GPT2
 VisionEncoderDecoderModel.from_pretrained("nlpconnect/vit-gpt2-image-captioning")

@@ -2,7 +2,7 @@
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form
 from fastapi.responses import FileResponse
 from models import CaptionResponse, HistoryResponse
-from utils import save_result, load_history, save_upload
+from utils import save_result, load_history, save_upload, clear_history
 from config import Config
 from typing import Optional
 
@@ -150,3 +150,11 @@ def get_image(rel_path: str):
     if base not in target.parents or not target.is_file():
         raise HTTPException(status_code=404, detail="Image not found")
     return FileResponse(target)
+
+@app.delete("/history")
+def delete_history():
+    try:
+        clear_history()
+        return {"status": "ok", "message": "History cleared"}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
