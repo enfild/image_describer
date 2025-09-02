@@ -23,10 +23,6 @@ This project implements a multimodal pipeline for image → text captioning with
 ## Important note:
 In app/Dockerfile the LLaVA block is commented out by default.
 If you want to pre-download and cache LLaVA during build, you must uncomment it. Otherwise the model will try to load at runtime and you will constantly hit errors.
-I disabled it because my local laptop does not have enough RAM/GPU memory to fetch and cache such a large model during build.
-
-## In summary:
-Unfortunately I only have a personal laptop available, so I could not fully test the LLaVA pipeline. However, it should work correctly in an environment with enough resources.
 
 # Usage
 
